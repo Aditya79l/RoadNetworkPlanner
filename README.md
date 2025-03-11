@@ -2,7 +2,6 @@
 
 A Django web application for optimizing road network layouts using genetic algorithms and OpenStreetMap data.
 
-![Application Screenshot](screenshot.png)
 
 ## Features
 - Real-time road network visualization
