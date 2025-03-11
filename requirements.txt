@@ -1,0 +1,8 @@
+Django==5.0.4
+osmnx==1.9.1
+numpy==1.26.4
+matplotlib==3.8.4
+shapely==2.0.4
+networkx==3.3
+python-dotenv==1.0.1
+geopandas==0.14.3
