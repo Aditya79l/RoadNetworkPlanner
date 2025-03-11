@@ -10,7 +10,7 @@ import io
 import base64
 
 def home(request):
-    return render(request, 'planner/home.html')
+    return render(request, 'C:/Users/adity/Desktop/Django/RoadNetworkPlanner/planner/templates/planner/home.html')
 
 def generate_road_network(request):
     if request.method == 'POST':
@@ -45,7 +45,7 @@ def generate_road_network(request):
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
-def genetic_algorithm(graph, obstacles, generations=5, population_size=10):
+def genetic_algorithm(graph, obstacles, generations=20, population_size=30):
     population = [generate_random_chromosome(graph) for _ in range(population_size)]
     for _ in range(generations):
         # Fitness evaluation
