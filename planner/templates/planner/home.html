@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road Network Planner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        #locationForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .comparison-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .map-box {
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 45%;
+            text-align: center;
+        }
+
+        .map-title {
+            margin-bottom: 10px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        #beforeImage, #afterImage {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: none;
+        }
+
+        #loading {
+            display: none;
+            color: #666;
+            margin: 20px 0;
+        }
+
+        #error {
+            color: red;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Road Network Planner</h1>
+    
+    <form id="locationForm">
+        {% csrf_token %}
+        <input type="text" id="location" name="location" placeholder="Enter location (e.g., Berkeley, California)">
+        <button type="submit">Generate Road Network</button>
+    </form>
+
+    <div id="loading">Generating road network...</div>
+    <div id="error"></div>
+
+    <div class="comparison-container">
+        <div class="map-box">
+            <div class="map-title">Original Road Network</div>
+            <img id="beforeImage" src="" alt="Original Road Layout">
+        </div>
+        
+        <div class="map-box">
+            <div class="map-title">Optimized Road Network</div>
+            <img id="afterImage" src="" alt="Optimized Road Layout">
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('locationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const location = document.getElementById('location').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            const loading = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+
+            // Show loading and reset displays
+            loading.style.display = 'block';
+            errorDiv.style.display = 'none';
+            document.getElementById('beforeImage').style.display = 'none';
+            document.getElementById('afterImage').style.display = 'none';
+
+            fetch('/generate-road-network/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `location=${encodeURIComponent(location)}`
+            })
+            .then(response => {
+                loading.style.display = 'none';
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
+            .then(data => {
+                if (data.before_plot_url && data.after_plot_url) {
+                    const beforeImg = document.getElementById('beforeImage');
+                    const afterImg = document.getElementById('afterImage');
+                    
+                    beforeImg.src = `data:image/png;base64,${data.before_plot_url}`;
+                    afterImg.src = `data:image/png;base64,${data.after_plot_url}`;
+                    
+                    beforeImg.style.display = 'block';
+                    afterImg.style.display = 'block';
+                } else {
+                    throw new Error('Missing image data in response');
+                }
+            })
+            .catch(error => {
+                errorDiv.textContent = `Error: ${error.message}`;
+                errorDiv.style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>
